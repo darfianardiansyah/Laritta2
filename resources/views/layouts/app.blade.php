@@ -13,6 +13,18 @@
     <!-- DataTables CSS -->
     <link href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css" rel="stylesheet">
 
+    <style>
+        /* Pastikan tabel dapat di-scroll di perangkat kecil */
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        /* Sesuaikan tombol agar lebih mudah diklik */
+        .btn {
+            font-size: 0.9rem;
+            padding: 0.5rem 1rem;
+        }
+    </style>
     @stack('styles')
 </head>
 
