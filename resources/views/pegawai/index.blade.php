@@ -78,6 +78,7 @@
 
         $('#btnCreate').click(function() {
             $('#pegawaiModal').modal('show');
+            $('#pegawaiForm')[0].reset();
         });
 
         $(document).on('click', '.btnDelete', function() {
@@ -124,7 +125,6 @@
             });
         });
 
-        // Fungsi untuk load dropdown dengan error handling
         function loadDropdown(url, target, placeholder) {
             $(target).empty().append(`<option value="">${placeholder}</option>`).prop('disabled', true);
             $.getJSON(url)
@@ -140,7 +140,6 @@
                 });
         }
 
-        // Load Provinsi dengan error handling
         loadDropdown("{{ url('api/provinsi') }}", "#provinsi", "Pilih Provinsi");
 
         $('#provinsi').change(function() {
