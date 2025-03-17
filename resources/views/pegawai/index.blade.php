@@ -37,12 +37,14 @@
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             }
         });
+
         let table = $('#pegawaiTable').DataTable({
             ajax: {
                 url: "{{ url('pegawai/data') }}",
                 type: "GET",
                 dataType: "json",
                 error: function(xhr, error, thrown) {
+                    alert("Gagal mengambil data pegawai. Coba lagi nanti.");
                     console.log("Error:", xhr.responseText);
                 }
             },
@@ -68,7 +70,7 @@
                     data: null,
                     render: function(data, type, row) {
                         return `<button class="btn btn-warning btnEdit" data-id="${row.id}">Edit</button>
-                        <button class="btn btn-danger btnDelete" data-id="${row.id}">Hapus</button>`;
+                            <button class="btn btn-danger btnDelete" data-id="${row.id}">Hapus</button>`;
                     }
                 }
             ]
@@ -85,6 +87,10 @@
                 type: 'DELETE',
                 success: function() {
                     table.ajax.reload();
+                },
+                error: function(xhr) {
+                    alert("Gagal menghapus data. Silakan coba lagi.");
+                    console.log("Error:", xhr.responseText);
                 }
             });
         });
@@ -104,7 +110,7 @@
                 success: function(response) {
                     $('#pegawaiModal').modal('hide');
                     $('#pegawaiForm')[0].reset();
-                    $('#pegawaiTable').DataTable().ajax.reload();
+                    table.ajax.reload();
                     alert("Data pegawai berhasil disimpan!");
                 },
                 error: function(xhr) {
@@ -118,68 +124,53 @@
             });
         });
 
-        // Load Provinsi
-        $.getJSON("{{ url('api/provinsi') }}", function(data) {
-            $.each(data.result, function(index, item) {
-                $('#provinsi').append(new Option(item.text, item.id));
-            });
-        });
+        // Fungsi untuk load dropdown dengan error handling
+        function loadDropdown(url, target, placeholder) {
+            $(target).empty().append(`<option value="">${placeholder}</option>`).prop('disabled', true);
+            $.getJSON(url)
+                .done(function(data) {
+                    $.each(data.result, function(index, item) {
+                        $(target).append(new Option(item.text, item.id));
+                    });
+                    $(target).prop('disabled', false);
+                })
+                .fail(function(xhr) {
+                    alert(`Gagal memuat data ${placeholder.toLowerCase()}. Coba lagi nanti.`);
+                    console.log("Error:", xhr.responseText);
+                });
+        }
 
-        // Saat provinsi dipilih
+        // Load Provinsi dengan error handling
+        loadDropdown("{{ url('api/provinsi') }}", "#provinsi", "Pilih Provinsi");
+
         $('#provinsi').change(function() {
             let id = $(this).val();
-
-            // Reset dan disable kab/kota, kecamatan, kode pos
-            $('#kabkota').empty().append('<option value="">Pilih Kabupaten/Kota</option>').prop(
-                'disabled', true);
-            $('#kecamatan').empty().append('<option value="">Pilih Kecamatan</option>').prop('disabled',
-                true);
-            $('#kodepos').empty().append('<option value="">Pilih Kode Pos</option>').prop('disabled',
-                true);
+            $('#kabkota').empty().append('<option value="">Pilih Kabupaten/Kota</option>').prop('disabled', true);
+            $('#kecamatan').empty().append('<option value="">Pilih Kecamatan</option>').prop('disabled', true);
+            $('#kodepos').empty().append('<option value="">Pilih Kode Pos</option>').prop('disabled', true);
 
             if (id) {
-                $.getJSON(`{{ url('api/kabkota') }}/${id}`, function(data) {
-                    $.each(data.result, function(index, item) {
-                        $('#kabkota').append(new Option(item.text, item.id));
-                    });
-                    $('#kabkota').prop('disabled', false);
-                });
+                loadDropdown(`{{ url('api/kabkota') }}/${id}`, "#kabkota", "Pilih Kabupaten/Kota");
             }
         });
-        // Saat kab/kota dipilih
+
         $('#kabkota').change(function() {
             let id = $(this).val();
-
-            $('#kecamatan').empty().append('<option value="">Pilih Kecamatan</option>').prop('disabled',
-                true);
-            $('#kodepos').empty().append('<option value="">Pilih Kode Pos</option>').prop('disabled',
-                true);
+            $('#kecamatan').empty().append('<option value="">Pilih Kecamatan</option>').prop('disabled', true);
+            $('#kodepos').empty().append('<option value="">Pilih Kode Pos</option>').prop('disabled', true);
 
             if (id) {
-                $.getJSON(`{{ url('api/kecamatan') }}/${id}`, function(data) {
-                    $.each(data.result, function(index, item) {
-                        $('#kecamatan').append(new Option(item.text, item.id));
-                    });
-                    $('#kecamatan').prop('disabled', false);
-                });
+                loadDropdown(`{{ url('api/kecamatan') }}/${id}`, "#kecamatan", "Pilih Kecamatan");
             }
         });
 
-        // Saat kecamatan dipilih
         $('#kecamatan').change(function() {
             let kabkota_id = $('#kabkota').val();
             let kecamatan_id = $(this).val();
-
-            $('#kodepos').empty().append('<option value="">Pilih Kode Pos</option>').prop('disabled',
-                true);
+            $('#kodepos').empty().append('<option value="">Pilih Kode Pos</option>').prop('disabled', true);
 
             if (kabkota_id && kecamatan_id) {
-                $.getJSON(`{{ url('api/kodepos') }}/${kabkota_id}/${kecamatan_id}`, function(data) {
-                    $.each(data.result, function(index, item) {
-                        $('#kodepos').append(new Option(item.text, item.id));
-                    });
-                    $('#kodepos').prop('disabled', false);
-                });
+                loadDropdown(`{{ url('api/kodepos') }}/${kabkota_id}/${kecamatan_id}`, "#kodepos", "Pilih Kode Pos");
             }
         });
     });
