@@ -39,6 +39,17 @@
                 }
             });
 
+            function handleAjaxError(xhr) {
+                if (xhr.status === 0) {
+                    alert("Gagal terhubung ke server.");
+                } else if (xhr.status === 404) {
+                    alert("Endpoint tidak ditemukan.");
+                } else if (xhr.status === 500) {
+                    alert("Terjadi kesalahan server.");
+                } else {
+                    alert(`Terjadi kesalahan: ${xhr.responseText}`);
+                }
+            }
             let table = $('#pegawaiTable').DataTable({
                 ajax: {
                     url: "{{ url('pegawai/data') }}",
@@ -46,7 +57,7 @@
                     dataType: "json",
                     error: function(xhr, error, thrown) {
                         alert("Gagal mengambil data pegawai. Coba lagi nanti.");
-                        console.log("Error:", xhr.responseJSON.errors);
+                        handleAjaxError(xhr);
                     }
                 },
                 columns: [{
@@ -93,6 +104,7 @@
                 $('#kodepos').empty().append('<option value="">Pilih Kode Pos</option>').prop('disabled',
                     true);
             });
+
             $(document).on('click', '.btnEdit', function() {
                 let id = $(this).data('id');
                 $.ajax({
@@ -111,7 +123,7 @@
                     },
                     error: function(xhr) {
                         alert("Gagal memuat data pegawai. Coba lagi nanti.");
-                        console.log("Error:", xhr.responseJSON.errors);
+                        handleAjaxError(xhr);
                     }
                 });
             });
@@ -126,7 +138,7 @@
                     },
                     error: function(xhr) {
                         alert("Gagal menghapus data. Silakan coba lagi.");
-                        console.log("Error:", xhr.responseJSON.errors);
+                        handleAjaxError(xhr);
                     }
                 });
             });
@@ -175,6 +187,7 @@
                             errorMessage += `- ${value}\n`;
                         });
                         alert(errorMessage);
+                        handleAjaxError(xhr);
                     }
                 });
             });
@@ -191,7 +204,7 @@
                     })
                     .fail(function(xhr) {
                         alert(`Gagal memuat data ${placeholder.toLowerCase()}. Coba lagi nanti.`);
-                        console.log("Error:", xhr.responseJSON.errors);
+                        handleAjaxError(xhr);
                     });
             }
 
