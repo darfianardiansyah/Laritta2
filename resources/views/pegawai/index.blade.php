@@ -13,6 +13,7 @@
             <table id="pegawaiTable" class="table table-bordered">
                 <thead>
                     <tr>
+                        <th>No.</th>
                         <th>Nama</th>
                         <th>Alamat</th>
                         <th>Provinsi</th>
@@ -45,10 +46,16 @@
                     dataType: "json",
                     error: function(xhr, error, thrown) {
                         alert("Gagal mengambil data pegawai. Coba lagi nanti.");
-                        console.error("Error:", xhr.responseText);
+                        console.log("Error:", xhr.responseText);
                     }
                 },
                 columns: [{
+                        data: null,
+                        render: function(data, type, row, meta) {
+                            return meta.row + 1;
+                        },
+                        title: 'No.'
+                    }, {
                         data: 'nama'
                     },
                     {
@@ -76,58 +83,92 @@
                 ]
             });
 
-            function resetForm() {
-                $('#pegawaiForm')[0].reset();
-                $('#kabkota').empty().append('<option value="">Pilih Kabupaten/Kota</option>').prop('disabled',
-                    true);
-                $('#kecamatan').empty().append('<option value="">Pilih Kecamatan</option>').prop('disabled', true);
-                $('#kodepos').empty().append('<option value="">Pilih Kode Pos</option>').prop('disabled', true);
-            }
-
             $('#btnCreate').click(function() {
                 $('#pegawaiModal').modal('show');
-                resetForm();
+                $('#pegawaiForm')[0].reset();
+                $('#kabkota').empty().append('<option value="">Pilih Kabupaten/Kota</option>').prop(
+                    'disabled', true);
+                $('#kecamatan').empty().append('<option value="">Pilih Kecamatan</option>').prop('disabled',
+                    true);
+                $('#kodepos').empty().append('<option value="">Pilih Kode Pos</option>').prop('disabled',
+                    true);
+            });
+            $(document).on('click', '.btnEdit', function() {
+                let id = $(this).data('id');
+                $.ajax({
+                    url: `pegawai/edit/${id}`,
+                    type: 'GET',
+                    success: function(data) {
+                        $('#pegawaiModal').modal('show');
+                        $('#pegawaiForm')[0].reset();
+                        // $('#provinsi').val(data.provinsi_id);
+                        // $('#kabkota').val(data.kabkota_id);
+                        // $('#kecamatan').val(data.kecamatan_id);
+                        // $('#kodepos').val(data.kodepos_id);
+                        $('#nama').val(data.nama);
+                        $('#alamat').val(data.alamat);
+                        $('#pegawaiForm').data('id', data.id);
+                    },
+                    error: function(xhr) {
+                        alert("Gagal memuat data pegawai. Coba lagi nanti.");
+                    }
+                });
             });
 
             $(document).on('click', '.btnDelete', function() {
                 let id = $(this).data('id');
-
-                if (confirm("Apakah Anda yakin ingin menghapus data ini?")) {
-                    $.ajax({
-                        url: `pegawai/delete/${id}`,
-                        type: 'DELETE',
-                        success: function() {
-                            table.ajax.reload();
-                            alert("Data berhasil dihapus.");
-                        },
-                        error: function(xhr) {
-                            alert("Gagal menghapus data. Silakan coba lagi.");
-                            console.error("Error:", xhr);
-                        }
-                    });
-                }
+                $.ajax({
+                    url: `pegawai/delete/${id}`,
+                    type: 'DELETE',
+                    success: function() {
+                        table.ajax.reload();
+                    },
+                    error: function(xhr) {
+                        alert("Gagal menghapus data. Silakan coba lagi.");
+                        console.log("Error:", xhr);
+                    }
+                });
             });
-
             $('#pegawaiForm').submit(function(e) {
                 e.preventDefault();
 
                 let formData = new FormData(this);
-                let url = "{{ url('pegawai/store') }}";
+
+                let provinsiText = $('#provinsi option:selected').text();
+                let kabkotaText = $('#kabkota option:selected').text();
+                let kecamatanText = $('#kecamatan option:selected').text();
+
+                formData.append('provinsi_text', provinsiText);
+                formData.append('kabkota_text', kabkotaText);
+                formData.append('kecamatan_text', kecamatanText);
+
+                let url;
+                let type;
+                let id = $('#pegawaiForm').data('id');
+
+                if (id) {
+                    url = `{{ url('pegawai/update') }}/${id}`;
+                    type = "PUT";
+                } else {
+                    url = "{{ url('pegawai/store') }}";
+                    type = "POST";
+                }
 
                 $.ajax({
-                    type: "POST",
+                    type: type,
                     url: url,
                     data: formData,
                     processData: false,
                     contentType: false,
                     success: function(response) {
                         $('#pegawaiModal').modal('hide');
-                        resetForm();
+                        $('#pegawaiForm')[0].reset();
                         table.ajax.reload();
-                        alert("Data pegawai berhasil disimpan!");
+                        alert(id ? "Data pegawai berhasil diperbarui!" :
+                            "Data pegawai berhasil disimpan!");
                     },
                     error: function(xhr) {
-                        let errors = xhr.responseJSON?.errors || {};
+                        let errors = xhr.responseJSON.errors;
                         let errorMessage = "Terjadi kesalahan:\n";
                         $.each(errors, function(key, value) {
                             errorMessage += `- ${value}\n`;
@@ -136,6 +177,7 @@
                     }
                 });
             });
+
 
             function loadDropdown(url, target, placeholder) {
                 $(target).empty().append(`<option value="">${placeholder}</option>`).prop('disabled', true);
@@ -148,7 +190,7 @@
                     })
                     .fail(function(xhr) {
                         alert(`Gagal memuat data ${placeholder.toLowerCase()}. Coba lagi nanti.`);
-                        console.error("Error:", xhr.responseText);
+                        console.log("Error:", xhr.responseText);
                     });
             }
 
@@ -156,7 +198,13 @@
 
             $('#provinsi').change(function() {
                 let id = $(this).val();
-                resetForm();
+                $('#kabkota').empty().append('<option value="">Pilih Kabupaten/Kota</option>').prop(
+                    'disabled', true);
+                $('#kecamatan').empty().append('<option value="">Pilih Kecamatan</option>').prop('disabled',
+                    true);
+                $('#kodepos').empty().append('<option value="">Pilih Kode Pos</option>').prop('disabled',
+                    true);
+
                 if (id) {
                     loadDropdown(`{{ url('api/kabkota') }}/${id}`, "#kabkota", "Pilih Kabupaten/Kota");
                 }

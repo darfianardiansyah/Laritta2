@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [PegawaiController::class, 'index'])->name('pegawai.index');
 Route::get('/pegawai/data', [PegawaiController::class, 'list']);
 Route::post('/pegawai/store', [PegawaiController::class, 'store']);
+Route::get('/pegawai/edit/{id}', [PegawaiController::class, 'edit']);
 Route::put('/pegawai/update/{id}', [PegawaiController::class, 'update']);
 Route::delete('/pegawai/delete/{id}', [PegawaiController::class, 'destroy']);
 

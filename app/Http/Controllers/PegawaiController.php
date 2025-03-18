@@ -26,20 +26,39 @@ class PegawaiController extends Controller
     {
         try {
             $validatedData = $request->validate([
-                'nama'         => 'required|string|max:255',
-                'alamat'       => 'required|string',
-                'provinsi_id'  => 'required|integer',
-                'kabkota_id'   => 'required|integer',
-                'kecamatan_id' => 'required|integer',
-                'kodepos_id'   => 'required|integer',
+                'nama'           => 'required|string|max:255',
+                'alamat'         => 'required|string',
+                'provinsi_text'  => 'required|string',
+                'kabkota_text'   => 'required|string',
+                'kecamatan_text' => 'required|string',
+                'kodepos_id'     => 'required|integer',
             ]);
 
-            $pegawai = Pegawai::create($validatedData);
+            $pegawai = Pegawai::create([
+                'nama'         => $validatedData['nama'],
+                'alamat'       => $validatedData['alamat'],
+                'provinsi_id'  => $validatedData['provinsi_text'],
+                'kabkota_id'   => $validatedData['kabkota_text'],
+                'kecamatan_id' => $validatedData['kecamatan_text'],
+                'kodepos_id'   => $validatedData['kodepos_id'],
+            ]);
             return response()->json($pegawai);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json(['errors' => $e->errors()], 422);
         } catch (Exception $e) {
             return response()->json(['errors' => 'Gagal menyimpan data pegawai: ' . $e->getMessage()], 500);
+        }
+    }
+
+    public function edit($id)
+    {
+        try {
+            $pegawai = Pegawai::findOrFail($id);
+            return response()->json($pegawai);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json(['errors' => 'Data pegawai tidak ditemukan'], 404);
+        } catch (Exception $e) {
+            return response()->json(['errors' => 'Gagal memperbarui data pegawai: ' . $e->getMessage()], 500);
         }
     }
 
