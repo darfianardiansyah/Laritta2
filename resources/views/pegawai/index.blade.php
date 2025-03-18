@@ -46,7 +46,7 @@
                     dataType: "json",
                     error: function(xhr, error, thrown) {
                         alert("Gagal mengambil data pegawai. Coba lagi nanti.");
-                        console.log("Error:", xhr.responseText);
+                        console.log("Error:", xhr.responseJSON.errors);
                     }
                 },
                 columns: [{
@@ -111,6 +111,7 @@
                     },
                     error: function(xhr) {
                         alert("Gagal memuat data pegawai. Coba lagi nanti.");
+                        console.log("Error:", xhr.responseJSON.errors);
                     }
                 });
             });
@@ -125,7 +126,7 @@
                     },
                     error: function(xhr) {
                         alert("Gagal menghapus data. Silakan coba lagi.");
-                        console.log("Error:", xhr);
+                        console.log("Error:", xhr.responseJSON.errors);
                     }
                 });
             });
@@ -190,7 +191,7 @@
                     })
                     .fail(function(xhr) {
                         alert(`Gagal memuat data ${placeholder.toLowerCase()}. Coba lagi nanti.`);
-                        console.log("Error:", xhr.responseText);
+                        console.log("Error:", xhr.responseJSON.errors);
                     });
             }
 
