@@ -97,7 +97,7 @@
                     },
                     error: function(xhr) {
                         alert("Gagal menghapus data. Silakan coba lagi.");
-                        console.log("Error:", xhr.responseText);
+                        console.log("Error:", xhr);
                     }
                 });
             });
